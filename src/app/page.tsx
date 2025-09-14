@@ -1,103 +1,136 @@
-import Image from "next/image";
+"use client";
+
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  
+  const { openConnectModal } = useConnectModal();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  return (
+    <main className="min-h-screen bg-space text-pure">
+      {/* NAV */}
+      <header className="sticky top-0 z-10 border-b border-cyan/20 bg-space/80 backdrop-blur">
+        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-md border border-cyan/40 shadow-[0_0_20px_#00FFD120] grid place-items-center">
+              <span className="text-sm font-bold text-cyan">DCR</span>
+            </div>
+            <span className="font-medium tracking-wide">Dev Control Room</span>
+          </div>
+          <nav className="hidden sm:flex items-center gap-6 text-sm text-pure/80">
+            <a href="#features" className="hover:text-pure">Features</a>
+            <a href="#how" className="hover:text-pure">How it works</a>
+            <a href="#open" className="hover:text-pure">Open-source</a>
+          </nav>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </header>
+
+      {/* HERO */}
+      <section className="mx-auto max-w-6xl px-4 pt-16 pb-10">
+        <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+          <div>
+            <h1 className="text-3xl md:text-5xl font-extrabold leading-tight">
+              DCR — Dev Control Room
+            </h1>
+            <p className="mt-4 text-pure/80 text-lg">
+              Your command center for building on Somnia.
+            </p>
+            <p className="mt-1 text-pure/60">
+              All systems, <span className="text-cyan">under control</span>.
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                aria-label="Enter Dev Control Room"
+                className="px-5 py-3 rounded-md font-medium bg-cyan text-space transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-cyan/60"
+                onClick={() => openConnectModal?.()}
+              >
+                Enter Control Room
+              </button>
+              <a
+                href="#features"
+                className="px-5 py-3 rounded-md font-medium border border-cyan/30 text-pure hover:bg-white/5"
+              >
+                Explore Features
+              </a>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-2 text-xs">
+              <span className="px-2 py-1 rounded bg-pink/10 border border-pink/30 text-pink">
+                testnet-first
+              </span>
+              <span className="px-2 py-1 rounded bg-cyan/10 border border-cyan/30 text-cyan">
+                live insights
+              </span>
+              <span className="px-2 py-1 rounded bg-white/5 border border-white/20">
+                open-source
+              </span>
+            </div>
+          </div>
+
+          {/* Card de “mission control” */}
+          <div className="relative">
+            <div className="rounded-xl border border-cyan/30 bg-white/-[0.02] p-5 shadow-[0_0_40px_#00FFD115]">
+              <div className="flex items-center justify-between text-xs text-pure/70">
+                <span>Mission Console</span>
+                <div className="flex gap-1">
+                  <span className="h-2 w-2 rounded-full bg-cyan/80" />
+                  <span className="h-2 w-2 rounded-full bg-pink/80" />
+                  <span className="h-2 w-2 rounded-full bg-pure/60" />
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-3">
+                <div className="rounded-lg border border-cyan/20 p-3">
+                  <p className="text-xs text-pure/60">Registered</p>
+                  <p className="text-2xl font-bold">—</p>
+                </div>
+                <div className="rounded-lg border border-cyan/20 p-3">
+                  <p className="text-xs text-pure/60">Active (24h)</p>
+                  <p className="text-2xl font-bold">—</p>
+                </div>
+                <div className="rounded-lg border border-cyan/20 p-3">
+                  <p className="text-xs text-pure/60">Avg Gas</p>
+                  <p className="text-2xl font-bold">—</p>
+                </div>
+              </div>
+              <div className="mt-4 h-28 rounded-lg border border-cyan/20 grid place-items-center text-pure/50 text-sm">
+                Activity timeline (soon)
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section id="features" className="mx-auto max-w-6xl px-4 pb-16">
+        <h2 className="text-xl font-semibold">What you’ll get</h2>
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+          <li className="rounded-md border border-cyan/20 p-4">
+            <span className="text-cyan font-semibold">Register Contracts</span>
+            <p className="text-sm text-pure/70 mt-1">Track and label your Somnia testnet deployments.</p>
+          </li>
+          <li className="rounded-md border border-cyan/20 p-4">
+            <span className="text-cyan font-semibold">Live Pings</span>
+            <p className="text-sm text-pure/70 mt-1">Send owner/public pings and watch events as they happen.</p>
+          </li>
+          <li className="rounded-md border border-cyan/20 p-4">
+            <span className="text-cyan font-semibold">Gas Insights</span>
+            <p className="text-sm text-pure/70 mt-1">Estimates per function when ABI is available.</p>
+          </li>
+          <li className="rounded-md border border-cyan/20 p-4">
+            <span className="text-cyan font-semibold">Public Analysis</span>
+            <p className="text-sm text-pure/70 mt-1">Paste any address to inspect basic activity.</p>
+          </li>
+        </ul>
+      </section>
+
+      {/* FOOTER */}
+      <footer id="open" className="border-t border-white/10">
+        <div className="mx-auto max-w-6xl px-4 py-10 text-sm text-pure/60">
+          DCR — Dev Control Room • Built for Somnia testnet • Open-source soon
+        </div>
       </footer>
-    </div>
+    </main>
   );
 }
