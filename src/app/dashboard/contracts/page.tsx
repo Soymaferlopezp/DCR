@@ -1,40 +1,100 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useAccount,
+  usePublicClient,
+  useWriteContract,
+  useReadContract,
+  useWatchContractEvent
+} from "wagmi";
+import { useMemo, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { devlogAddress, devlogAbi } from "@/lib/devlog";
+import DashboardHeader from "@/components/DashboardHeader";
 
 export default function MyContractsPage() {
-  const [form, setForm] = useState({ name: "", address: "" });
-  const [rows, setRows] = useState<
-    { name: string; address: string; status: "unverified" | "verified" }[]
-  >([]);
+  const router = useRouter();
+  const { address: me, isConnected } = useAccount();
+  const pub = usePublicClient();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Guard: si no hay wallet conectada, volver al landing
+  useEffect(() => {
+    if (!isConnected) {
+      router.push("/");
+    }
+  }, [isConnected, router]);
+
+  const [form, setForm] = useState({ name: "", address: "" });
+
+  // Leer mis contratos (depende de msg.sender)
+  const { data: myList, refetch } = useReadContract({
+    address: devlogAddress,
+    abi: devlogAbi,
+    functionName: "getMyContracts",
+    account: me as `0x${string}`,
+    query: { enabled: !!me }
+  });
+
+  const rows = useMemo(() => {
+    if (!myList) return [];
+    const [addrs, labels] = myList as [readonly `0x${string}`[], readonly string[]];
+    return addrs.map((a, i) => ({
+      name: labels[i] || "Unnamed",
+      address: a,
+      status: "unverified" as const
+    }));
+  }, [myList]);
+
+  const { writeContractAsync, isPending } = useWriteContract();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Validación básica visual (sin bloquear al usuario en esta fase)
-    const addrOk = /^0x[a-fA-F0-9]{40}$/.test(form.address.trim());
-    setRows((prev) => [
-      ...prev,
-      { name: form.name.trim() || "Unnamed", address: form.address.trim(), status: addrOk ? "unverified" : "unverified" }
-    ]);
-    setForm({ name: "", address: "" });
+    const name = form.name.trim() || "Unnamed";
+    const addr = form.address.trim() as `0x${string}`;
+    if (!/^0x[a-fA-F0-9]{40}$/.test(addr)) {
+      alert("Address inválida");
+      return;
+    }
+    try {
+      const hash = await writeContractAsync({
+        address: devlogAddress,
+        abi: devlogAbi,
+        functionName: "registerMyContract",
+        args: [name, addr]
+      });
+      await pub!.waitForTransactionReceipt({ hash });
+      await refetch();
+      setForm({ name: "", address: "" });
+      alert("Contrato registrado ✅");
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.shortMessage || "Fallo al registrar");
+    }
   };
+
+  // Refrescar lista cuando llegue el evento (polling)
+  useWatchContractEvent({
+    address: devlogAddress,
+    abi: devlogAbi,
+    eventName: "ContractRegistered",
+    args: me ? { dev: me } : undefined,
+    enabled: !!me,
+    poll: true,
+    pollingInterval: 2000,
+    strict: false,
+    onLogs: () => refetch()
+  });
 
   return (
     <div className="min-h-full">
-      {/* Header del panel derecho */}
-      <header className="sticky top-0 z-10 bg-space/80 backdrop-blur border-b border-cyan/20">
-        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">My Contracts</h1>
-          <div className="text-xs text-pure/70">Register & manage</div>
-        </div>
-      </header>
+      <DashboardHeader title="My Contracts" />
 
       <div className="mx-auto max-w-6xl px-4 py-6 grid gap-6">
-        {/* Card: Formulario */}
+        {/* Form */}
         <div className="rounded-lg border border-cyan/20 p-4">
           <h2 className="font-medium">Register a contract (Somnia testnet)</h2>
           <p className="text-sm text-pure/70 mt-1">
-            This is a local placeholder. Later it will call <code>registerMyContract()</code>.
+            Calls <code>registerMyContract(name, address)</code> on-chain.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -60,10 +120,11 @@ export default function MyContractsPage() {
             <div className="sm:col-span-2 flex gap-3">
               <button
                 type="submit"
-                className="px-5 py-2 rounded-md font-medium bg-cyan text-space hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-cyan/60"
+                disabled={!me || isPending}
+                className="px-5 py-2 rounded-md font-medium bg-cyan text-space hover:brightness-110 disabled:opacity-50"
                 aria-label="Register contract"
               >
-                Register
+                {isPending ? "Registering…" : "Register"}
               </button>
               <a
                 href="/dashboard/analyze"
@@ -75,7 +136,7 @@ export default function MyContractsPage() {
           </form>
         </div>
 
-        {/* Card: Tabla simple */}
+        {/* Tabla */}
         <div className="rounded-lg border border-cyan/20 p-4">
           <h2 className="font-medium">My registered contracts</h2>
           <div className="mt-3 overflow-x-auto">
@@ -92,30 +153,48 @@ export default function MyContractsPage() {
                 {rows.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="py-6 text-center text-pure/50">
-                      No contracts yet. Register one above.
+                      {me
+                        ? "No contracts yet. Register one above."
+                        : "Connect your wallet to view your contracts."}
                     </td>
                   </tr>
                 ) : (
                   rows.map((r, i) => (
                     <tr key={i} className="border-t border-cyan/15">
                       <td className="py-2 pr-4">{r.name}</td>
-                      <td className="py-2 pr-4 font-mono">{r.address || "—"}</td>
+                      <td className="py-2 pr-4 font-mono">{r.address}</td>
                       <td className="py-2 pr-4">
-                        <span
-                          className={
-                            r.status === "verified"
-                              ? "px-2 py-1 rounded bg-cyan/10 border border-cyan/30 text-cyan"
-                              : "px-2 py-1 rounded bg-white/5 border border-white/20"
-                          }
-                        >
-                          {r.status}
+                        <span className="px-2 py-1 rounded bg-white/5 border border-white/20">
+                          unverified
                         </span>
                       </td>
                       <td className="py-2 pr-4">
                         <div className="flex gap-2">
                           <button
                             className="text-cyan hover:underline"
-                            onClick={() => alert("Soon: ping(owner)")}
+                            onClick={async () => {
+                              try {
+                                const hash = await writeContractAsync({
+                                  address: devlogAddress,
+                                  abi: devlogAbi,
+                                  functionName: "ping",
+                                  args: [r.address as `0x${string}`, 0] // owner ping (uint8)
+                                });
+                                await pub!.waitForTransactionReceipt({ hash });
+
+                                // persistimos el contador de sesión para Overview
+                                const key = "dcr:pings";
+                                const current = Number(localStorage.getItem(key) || "0");
+                                localStorage.setItem(key, String(current + 1));
+
+                                // avisar al tab actual
+                                window.dispatchEvent(new CustomEvent("dcr:ping"));
+
+                                alert("Ping sent ✅");
+                              } catch (e: any) {
+                                alert(e?.shortMessage || "Ping failed");
+                              }
+                            }}
                           >
                             Ping
                           </button>
@@ -130,8 +209,9 @@ export default function MyContractsPage() {
               </tbody>
             </table>
           </div>
+
           <p className="text-xs text-pure/60 mt-3">
-            Later: this table will stream on-chain events (watch) and persist via indexer.
+            Live via events; later we’ll persist with the indexer (Plan B).
           </p>
         </div>
       </div>

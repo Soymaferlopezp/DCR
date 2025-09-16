@@ -1,10 +1,21 @@
 "use client";
 
+import { useEffect } from "react";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { useAccount } from "wagmi";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  
   const { openConnectModal } = useConnectModal();
+  const { address, isConnected } = useAccount();
+  const router = useRouter();
+
+  // Si la wallet se conecta, entra al dashboard
+  useEffect(() => {
+    if (isConnected && address) {
+      router.push("/dashboard");
+    }
+  }, [isConnected, address, router]);
 
   return (
     <main className="min-h-screen bg-space text-pure">
@@ -43,8 +54,8 @@ export default function Home() {
               <button
                 type="button"
                 aria-label="Enter Dev Control Room"
-                className="px-5 py-3 rounded-md font-medium bg-cyan text-space transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-cyan/60"
-                onClick={() => openConnectModal?.()}
+                className="px-5 py-3 rounded-md font-medium bg-cyan text-space transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-cyan/60 shadow-[0_0_20px_rgba(0,255,209,0.25)]"
+                onClick={() => openConnectModal?.()} // abre el modal de RainbowKit
               >
                 Enter Control Room
               </button>
@@ -125,12 +136,34 @@ export default function Home() {
         </ul>
       </section>
 
-      {/* FOOTER */}
-      <footer id="open" className="border-t border-white/10">
-        <div className="mx-auto max-w-6xl px-4 py-10 text-sm text-pure/60">
-          DCR — Dev Control Room • Built for Somnia testnet • Open-source soon
-        </div>
-      </footer>
+{/* FOOTER */}
+<footer id="open" className="border-t border-white/10">
+  <div className="mx-auto max-w-6xl px-4 py-10 text-center text-sm text-pure/60">
+    <p className="mb-4">
+      DCR — Dev Control Room • Built for Somnia testnet
+    </p>
+
+    {/* contenedor que centra el bloque */}
+    <div className="flex justify-center">
+      <pre
+        className="inline-block text-[11px] sm:text-xs leading-[1.1] text-pure/70"
+        style={{
+          fontFamily:
+            'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+          whiteSpace: "pre",
+          letterSpacing: "0",
+        }}
+      >{String.raw`██████╗  ██████╗██████╗
+██╔══██╗██╔════╝██╔══██╗
+██║  ██║██║     ██████╔╝
+██║  ██║██║     ██╔══██╗
+██████╔╝╚██████╗██║  ██║
+╚═════╝  ╚═════╝╚═╝  ╚═╝`}</pre>
+    </div>
+  </div>
+</footer>
+
+
     </main>
   );
 }

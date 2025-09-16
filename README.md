@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DCR — Dev Control Room
+
+██████╗ ██████╗██████╗
+██╔══██╗██╔════╝██╔══██╗
+██║  ██║██║     ██████╔╝
+██║  ██║██║     ██╔══██╗
+██████╔╝╚██████╗██║  ██║
+╚═════╝  ╚═════╝╚═╝  ╚═╝
+
+**Your command center for building on Somnia.**  
+_All systems, under control._
+
+---
+
+## Features
+
+- **Wallet Connect** — seamless RainbowKit integration.  
+- **Contract Registry** — register your Somnia testnet smart contracts.  
+- **Live Pings** — interact with your contracts and visualize events.  
+- **Gas Insights** — estimate gas per interaction.  
+- **Public Analysis** — inspect activity of any address, even if not registered.  
+
+---
+
+## 🛠 Tech Stack
+
+- **Frontend**: Next.js 14 (App Router), TailwindCSS, shadcn/ui  
+- **Wallet Integration**: wagmi v2 + RainbowKit + viem  
+- **Charts**: Recharts  
+- **Smart Contracts**: Solidity (Somnia testnet)  
+- **DevOps**: Hardhat, dotenv  
+- **Optional Indexer**: Node.js + SQLite/Postgres (future work)  
+
+---
+
+## System Architecture
+```bash
+
+                   ┌────────────────────────┐
+                   │      Landing Page      │
+                   │  - Connect wallet      │
+                   │  - Project intro       │
+                   └───────────┬────────────┘
+                               │
+                    Wallet connection (RainbowKit)
+                               │
+┌──────────────────────────────────┴──────────────────────────────────┐
+│ Dashboard WebApp │
+│ ┌───────────────┐ ┌─────────────────┐ ┌─────────────────────┐ │
+│ │ Registry UI │→→ │ SomniaDevLog.sol │ ← │ Ping & Analytics │ │
+│ │ Register form │ │ (on-chain log) │ │ Charts & Insights │  │
+│ └───────────────┘ └─────────────────┘ └─────────────────────┘ │
+│ │ ▲ │ │
+│ ▼ │ ▼ │
+│ Local cache / │ Public address analyzer │
+│ Optional indexer │ (read-only mode) │
+└──────────────────────────────────────────────────────────────────────┘
+
+```
+
+---
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Clone the repository
+git clone https://github.com/yourname/dcr.git
+cd dcr
+
+# Install dependencies
+npm install
+
+# Run local dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Compile contracts
+npx hardhat compile
+
+# Deploy contract to Somnia testnet
+npx hardhat run scripts/deploy.cjs --network somnia
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
