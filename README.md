@@ -1,11 +1,13 @@
 # DCR — Dev Control Room
 
+```bash
 ██████╗ ██████╗██████╗
 ██╔══██╗██╔════╝██╔══██╗
 ██║  ██║██║     ██████╔╝
 ██║  ██║██║     ██╔══██╗
 ██████╔╝╚██████╗██║  ██║
 ╚═════╝  ╚═════╝╚═╝  ╚═╝
+```
 
 **Your command center for building on Somnia.**  
 _All systems, under control._
