@@ -10,11 +10,15 @@ import {
 } from "wagmi";
 import DashboardHeader from "@/components/DashboardHeader";
 import { devlogAddress, devlogAbi } from "@/lib/devlog";
+import toast from "react-hot-toast";
+import { pushGasSample, bumpSessionPings } from "@/lib/session";
+
 
 export default function MyContractsPage() {
   const { address: me } = useAccount();
   const pub = usePublicClient();
   const [form, setForm] = useState({ name: "", address: "" });
+  
 
   // 🔑 IMPORTANTE: pasar `account: me` para que getMyContracts vea TU msg.sender
   const { data: myList, refetch } = useReadContract({
@@ -53,13 +57,15 @@ export default function MyContractsPage() {
         args: [name, addr],
       });
       // Espera confirmación y luego refresca on-chain
-      await pub!.waitForTransactionReceipt({ hash, timeout: 25_000 });
-      alert("Contract registered ✅");
+      const receipt = await pub!.waitForTransactionReceipt({ hash, timeout: 25_000 });
+      pushGasSample(receipt.gasUsed);
+      bumpSessionPings(1);
+      toast.success("Contract registered ✅");
       setForm({ name: "", address: "" });
       await refetch();
     } catch (e: any) {
       console.error(e);
-      alert(e?.shortMessage || "Register failed");
+      toast.error(e?.shortMessage || "Register failed");
     }
   };
 
@@ -91,7 +97,7 @@ export default function MyContractsPage() {
       sessionStorage.setItem(key, String(current + 1));
       window.dispatchEvent(new CustomEvent("dcr:ping"));
 
-      alert("Ping sent ✅");
+      toast.success("Ping sent ✅");
     } catch (e: any) {
       console.error(e);
       alert(e?.shortMessage || "Ping failed");

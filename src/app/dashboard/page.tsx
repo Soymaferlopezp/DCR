@@ -1,12 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAccount, useReadContract, useWatchContractEvent } from "wagmi";
 import { devlogAddress, devlogAbi } from "@/lib/devlog";
 import DashboardHeader from "@/components/DashboardHeader";
+import { readGasSamples } from "@/lib/session";
 
 export default function DashboardHome() {
   const { address: me, isConnected } = useAccount();
+
+  const [gasSamples, setGasSamples] = useState<number[]>([]);
+
+  useEffect(() => {
+    const load = () => setGasSamples(readGasSamples());
+    load(); // inicial
+    window.addEventListener("dcr:ping", load);
+    return () => window.removeEventListener("dcr:ping", load);
+  }, []);
+
+  const avgGas = useMemo(() => {
+    if (!gasSamples.length) return null;
+    const sum = gasSamples.reduce((a, b) => a + b, 0);
+    return Math.round(sum / gasSamples.length);
+  }, [gasSamples]);
+
 
   const { data: myList } = useReadContract({
     address: devlogAddress,
@@ -54,7 +71,7 @@ export default function DashboardHome() {
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-lg border border-cyan/20 p-4">
             <p className="text-xs text-pure/60">Registered</p>
-            <p className="text-2xl font-bold">{isConnected ? registeredCount : "—"}</p>
+            <p className="text-2xl font-bold">{isConnected ? registeredCount : "-"}</p>
           </div>
           <div className="rounded-lg border border-cyan/20 p-4">
             <p className="text-xs text-pure/60">Active (session)</p>
@@ -62,7 +79,7 @@ export default function DashboardHome() {
           </div>
           <div className="rounded-lg border border-cyan/20 p-4">
             <p className="text-xs text-pure/60">Avg Gas</p>
-            <p className="text-2xl font-bold">—</p>
+            <p className="text-2xl font-bold">{avgGas ? avgGas.toLocaleString() : "—"}</p>
             <p className="text-xs text-pure/50 mt-1">(Plan B)</p>
           </div>
         </div>

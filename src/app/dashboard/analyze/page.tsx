@@ -5,6 +5,8 @@ import { useAccount, usePublicClient, useWatchContractEvent, useWriteContract } 
 import { useRouter, useSearchParams } from "next/navigation";
 import DashboardHeader from "@/components/DashboardHeader";
 import { devlogAddress, devlogAbi } from "@/lib/devlog";
+import toast from "react-hot-toast";
+import { pushGasSample, bumpSessionPings } from "@/lib/session";
 
 type PingRow = {
   txHash: `0x${string}`;
@@ -112,13 +114,15 @@ export default function AnalyzePage() {
 
       // Espera receipt y completa blockNumber
       const receipt = await pub!.waitForTransactionReceipt({ hash, timeout: 30_000 });
+      pushGasSample(receipt.gasUsed);
+      bumpSessionPings(1);
       const bn = receipt.blockNumber ? String(receipt.blockNumber) : undefined;
 
       setPings((prev) =>
         prev.map((r) => (r.txHash === hash ? { ...r, optimistic: false, blockNumber: bn } : r))
       );
 
-      alert("Public ping sent ✅");
+      toast.success("Ping sent ✅");
     } catch (e: any) {
       const msg = String(e?.message || e?.shortMessage || "");
       if (/user denied|user rejected|rejected the request/i.test(msg)) {

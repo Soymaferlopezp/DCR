@@ -94,15 +94,15 @@ export default function Home() {
               <div className="mt-4 grid grid-cols-3 gap-3">
                 <div className="rounded-lg border border-cyan/20 p-3">
                   <p className="text-xs text-pure/60">Registered</p>
-                  <p className="text-2xl font-bold">—</p>
+                  <p className="text-2xl font-bold">15</p>
                 </div>
                 <div className="rounded-lg border border-cyan/20 p-3">
                   <p className="text-xs text-pure/60">Active (24h)</p>
-                  <p className="text-2xl font-bold">—</p>
+                  <p className="text-2xl font-bold">73</p>
                 </div>
                 <div className="rounded-lg border border-cyan/20 p-3">
                   <p className="text-xs text-pure/60">Avg Gas</p>
-                  <p className="text-2xl font-bold">—</p>
+                  <p className="text-2xl font-bold">15,9873</p>
                 </div>
               </div>
               <div className="mt-4 h-28 rounded-lg border border-cyan/20 grid place-items-center text-pure/50 text-sm">

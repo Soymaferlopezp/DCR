@@ -4,6 +4,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { WagmiProvider, http, fallback } from "wagmi";
 import { RainbowKitProvider, getDefaultConfig, darkTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "react-hot-toast";
 
 const SOMNIA_ID = Number(process.env.NEXT_PUBLIC_SOMNIA_CHAIN_ID || 1301);
 const RPC_PRIMARY = process.env.NEXT_PUBLIC_SOMNIA_RPC || "https://dream-rpc.somnia.network/";
@@ -58,6 +59,14 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           })}
         >
           {children}
+          <Toaster
+          position="bottom-right"
+          toastOptions={{
+            style: { background: "#0A0F1F", color: "#fff", border: "1px solid rgba(0,255,209,0.3)" },
+            success: { iconTheme: { primary: "#00FFD1", secondary: "#0A0F1F" } },
+            error: { iconTheme: { primary: "#FF3B6A", secondary: "#0A0F1F" } },
+          }}
+        />  
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
