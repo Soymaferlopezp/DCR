@@ -80,7 +80,6 @@ export default function DashboardHome() {
           <div className="rounded-lg border border-cyan/20 p-4">
             <p className="text-xs text-pure/60">Avg Gas</p>
             <p className="text-2xl font-bold">{avgGas ? avgGas.toLocaleString() : "—"}</p>
-            <p className="text-xs text-pure/50 mt-1">(Plan B)</p>
           </div>
         </div>
         <div className="h-64 rounded-lg border border-cyan/20 grid place-items-center text-pure/50 text-sm">

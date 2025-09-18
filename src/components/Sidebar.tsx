@@ -7,7 +7,7 @@ const links = [
   { href: "/dashboard", label: "Overview" },
   { href: "/dashboard/contracts", label: "My Contracts" },
   { href: "/dashboard/analyze", label: "Analyze" },
-  { href: "/dashboard/alerts", label: "Alerts" },
+  { href: "/dashboard/alerts", label: "Pings Alerts" },
   { href: "/dashboard/settings", label: "Settings" },
 ];
 
