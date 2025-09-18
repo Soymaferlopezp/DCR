@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react"; // <- ✅ agregamos Suspense
 import { useAccount, usePublicClient, useWatchContractEvent, useWriteContract, useChainId } from "wagmi";
 import { useRouter, useSearchParams } from "next/navigation";
 import DashboardHeader from "@/components/DashboardHeader";
@@ -19,7 +19,8 @@ type PingRow = {
 
 export const dynamic = 'force-dynamic';
 
-export default function AnalyzePage() {
+// ⬇️ ⬇️ ⬇️  tu antigua AnalyzePage pasa a ser "AnalyzePageInner" (misma lógica 1:1)
+function AnalyzePageInner() {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -88,7 +89,7 @@ export default function AnalyzePage() {
     router.push(`/dashboard/analyze?address=${normalized}`);
   };
 
-  // ✅ UI optimista: si el watcher falla por RPC, igual agregamos la fila tras la firma
+  // ✅ UI optimista
   const sendPublicPing = async () => {
     try {
       setRpcError("");
@@ -119,7 +120,6 @@ export default function AnalyzePage() {
       const receipt = await pub!.waitForTransactionReceipt({ hash, timeout: 30_000 });
       pushGasSample(chainId, me as `0x${string}`, receipt.gasUsed);
       bumpSessionPings(chainId, me as `0x${string}`, 1);
-      // Gas por tx (feed de sesión)
       recordTxMeta(chainId, me as `0x${string}`, {
         txHash: hash,
         gasUsed: Number(receipt.gasUsed),
@@ -150,49 +150,49 @@ export default function AnalyzePage() {
     }
   };
 
-  // 🔄 Refresco manual (por si el watcher no anda)
-const manualRefresh = async () => {
-  try {
-    if (!listeningTo) return;
-    setRpcError("");
+  // 🔄 Refresco manual
+  const manualRefresh = async () => {
+    try {
+      if (!listeningTo) return;
+      setRpcError("");
 
-    const latest = await pub!.getBlockNumber(); // bigint
-    const lookback = BigInt(300);               // <= ventana más chica (evita “range > 1000”)
-    const from = latest - lookback;
-    const safeFrom = from < BigInt(0) ? BigInt(0) : from;
+      const latest = await pub!.getBlockNumber(); // bigint
+      const lookback = BigInt(300);
+      const from = latest - lookback;
+      const safeFrom = from < BigInt(0) ? BigInt(0) : from;
 
-    const logs = await pub!.getLogs({
-      address: devlogAddress,
-      event: {
-        type: "event",
-        name: "DevPing",
-        inputs: [
-          { name: "dev", type: "address", indexed: true },
-          { name: "contractUsed", type: "address", indexed: true },
-          { name: "kind", type: "uint8", indexed: false },
-        ],
-      } as any,
-      args: { contractUsed: listeningTo as `0x${string}` },
-      fromBlock: safeFrom,
-      toBlock: latest,
-    } as any);
+      const logs = await pub!.getLogs({
+        address: devlogAddress,
+        event: {
+          type: "event",
+          name: "DevPing",
+          inputs: [
+            { name: "dev", type: "address", indexed: true },
+            { name: "contractUsed", type: "address", indexed: true },
+            { name: "kind", type: "uint8", indexed: false },
+          ],
+        } as any,
+        args: { contractUsed: listeningTo as `0x${string}` },
+        fromBlock: safeFrom,
+        toBlock: latest,
+      } as any);
 
-    const rows: PingRow[] = logs
-      .map((log: any) => ({
-        txHash: log.transactionHash as `0x${string}`,
-        dev: log.args?.dev as `0x${string}`,
-        contractUsed: log.args?.contractUsed as `0x${string}`,
-        kind: Number(log.args?.kind ?? 0),
-        blockNumber: log.blockNumber ? String(log.blockNumber) : undefined,
-      }))
-      .reverse();
+      const rows: PingRow[] = logs
+        .map((log: any) => ({
+          txHash: log.transactionHash as `0x${string}`,
+          dev: log.args?.dev as `0x${string}`,
+          contractUsed: log.args?.contractUsed as `0x${string}`,
+          kind: Number(log.args?.kind ?? 0),
+          blockNumber: log.blockNumber ? String(log.blockNumber) : undefined,
+        }))
+        .reverse();
 
-    setPings(rows);
-  } catch (e: any) {
-    console.error(e);
-    setRpcError("RPC error on refresh. Try again later.");
-  }
-};
+      setPings(rows);
+    } catch (e: any) {
+      console.error(e);
+      setRpcError("RPC error on refresh. Try again later.");
+    }
+  };
 
   const hint = useMemo(() => {
     if (!target) return "Paste a contract address.";
@@ -315,3 +315,15 @@ const manualRefresh = async () => {
     </div>
   );
 }
+
+// ⬆️ tu UI queda intacta. Solo cambió el nombre de la función.
+
+// ⬇️ nuevo default export que envuelve con Suspense (requisito de Next)
+export default function AnalyzePage() {
+  return (
+    <Suspense fallback={<div>Loading…</div>}>
+      <AnalyzePageInner />
+    </Suspense>
+  );
+}
+
