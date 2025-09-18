@@ -131,7 +131,7 @@ Track your own contracts, watch <strong>live on-chain activity</strong> (pings/r
            v                               v                                                         v
   ┌──────────────────────┐         ┌──────────────────────┐                                   ┌─────────────────────┐
   │ SomniaDevLog.sol     │  <────> │ Read/Watch (viem)    │                                   │ Stream/Watch Events │
-  │ (Shannon Testnet)    │         │ getLogs / watchLogs  │                                   │ DevPing, Regs       │
+  │ (Somnia Testnet)     │         │ getLogs / watchLogs  │                                   │ DevPing, Regs       │
   └───────┬──────────────┘         └────────┬─────────────┘                                   └─────────┬───────────┘
           │ emits events:                     │ decode + update                                           │ notify UI
           │  - ContractRegistered             │                                                           │
