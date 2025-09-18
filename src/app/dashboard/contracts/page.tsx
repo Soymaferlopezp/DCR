@@ -7,15 +7,17 @@ import {
   useWriteContract,
   useReadContract,
   useWatchContractEvent,
+  useChainId,
 } from "wagmi";
 import DashboardHeader from "@/components/DashboardHeader";
 import { devlogAddress, devlogAbi } from "@/lib/devlog";
 import toast from "react-hot-toast";
-import { pushGasSample, bumpSessionPings } from "@/lib/session";
+import { pushGasSample, bumpSessionPings, recordTxMeta } from "@/lib/session";
 
 
 export default function MyContractsPage() {
   const { address: me } = useAccount();
+  const chainId = useChainId();
   const pub = usePublicClient();
   const [form, setForm] = useState({ name: "", address: "" });
   
@@ -58,8 +60,15 @@ export default function MyContractsPage() {
       });
       // Espera confirmación y luego refresca on-chain
       const receipt = await pub!.waitForTransactionReceipt({ hash, timeout: 25_000 });
-      pushGasSample(receipt.gasUsed);
-      bumpSessionPings(1);
+      pushGasSample(chainId, me as `0x${string}`, receipt.gasUsed);
+      bumpSessionPings(chainId, me as `0x${string}`, 1);
+      recordTxMeta(chainId, me as `0x${string}`, {
+      txHash: hash,
+      gasUsed: Number(receipt.gasUsed),
+      type: "Register",
+      contract: addr,
+      at: Date.now(),
+      });
       toast.success("Contract registered ✅");
       setForm({ name: "", address: "" });
       await refetch();
@@ -96,6 +105,17 @@ export default function MyContractsPage() {
       const current = Number(sessionStorage.getItem(key) || "0");
       sessionStorage.setItem(key, String(current + 1));
       window.dispatchEvent(new CustomEvent("dcr:ping"));
+
+      const receipt = await pub!.waitForTransactionReceipt({ hash, timeout: 25_000 });
+      pushGasSample(chainId, me as `0x${string}`, receipt.gasUsed);
+      bumpSessionPings(chainId, me as `0x${string}`, 1);
+      recordTxMeta(chainId, me as `0x${string}`, {
+      txHash: hash,
+      gasUsed: Number(receipt.gasUsed),
+      type: "Ping",
+      contract: addr,
+      at: Date.now(),
+    });
 
       toast.success("Ping sent ✅");
     } catch (e: any) {

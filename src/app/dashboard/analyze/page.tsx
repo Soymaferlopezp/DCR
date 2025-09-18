@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useAccount, usePublicClient, useWatchContractEvent, useWriteContract } from "wagmi";
+import { useAccount, usePublicClient, useWatchContractEvent, useWriteContract, useChainId } from "wagmi";
 import { useRouter, useSearchParams } from "next/navigation";
 import DashboardHeader from "@/components/DashboardHeader";
 import { devlogAddress, devlogAbi } from "@/lib/devlog";
 import toast from "react-hot-toast";
-import { pushGasSample, bumpSessionPings } from "@/lib/session";
+import { pushGasSample, bumpSessionPings, recordTxMeta } from "@/lib/session";
 
 type PingRow = {
   txHash: `0x${string}`;
@@ -23,6 +23,7 @@ export default function AnalyzePage() {
 
   const pub = usePublicClient();
   const { address: me } = useAccount();
+  const chainId = useChainId();
   const { writeContractAsync, isPending } = useWriteContract();
 
   const [target, setTarget] = useState<string>(params.get("address") || "");
@@ -114,8 +115,17 @@ export default function AnalyzePage() {
 
       // Espera receipt y completa blockNumber
       const receipt = await pub!.waitForTransactionReceipt({ hash, timeout: 30_000 });
-      pushGasSample(receipt.gasUsed);
-      bumpSessionPings(1);
+      pushGasSample(chainId, me as `0x${string}`, receipt.gasUsed);
+      bumpSessionPings(chainId, me as `0x${string}`, 1);
+      // Gas por tx (feed de sesión)
+      recordTxMeta(chainId, me as `0x${string}`, {
+        txHash: hash,
+        gasUsed: Number(receipt.gasUsed),
+        type: "Ping",
+        contract: listeningTo as `0x${string}`,
+        at: Date.now(),
+      });
+
       const bn = receipt.blockNumber ? String(receipt.blockNumber) : undefined;
 
       setPings((prev) =>
