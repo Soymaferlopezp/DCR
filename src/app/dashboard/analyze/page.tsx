@@ -17,6 +17,8 @@ type PingRow = {
   optimistic?: boolean;
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function AnalyzePage() {
   const router = useRouter();
   const params = useSearchParams();
